@@ -6,7 +6,7 @@ if (document.location.href.indexOf('#') == -1)
         map.setView([51.591, 24.609], 5);
 
 var mapnik = L.tileLayer.grayscale('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 18,
 }).addTo(map);
 
@@ -50,7 +50,6 @@ L.Control.Link = L.Control.extend({
         editorCheckBox.style.verticalAlign = 'top';
         editorActivation.appendChild(editorCheckBox);
 
-
         var label = document.createElement('label');
         label.setAttribute('for', 'editorcb');
         label.innerText = 'Editor';
@@ -59,7 +58,7 @@ L.Control.Link = L.Control.extend({
 
         div.appendChild(editorActivation);
 
-        div.innerHTML += ' | <a target="_blank" href="https://github.com/zetx16/parking-lanes">GitHub</a>';
+        div.innerHTML += ' | <a target="_blank" href="https://github.com/tordans/road-surfaces">GitHub</a>';
 
         div.onmouseenter = e => document.getElementById('editors').style.display = 'inline';
         div.onmouseleave = e => document.getElementById('editors').style.display = 'none';
@@ -226,7 +225,6 @@ var saving = false;
 var viewMinZoom = 15;
 
 var highwayRegex = new RegExp('^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street');
-
 
 // ------------- functions -------------------
 
@@ -698,7 +696,6 @@ function getLaneInfoPanelContent(osm) {
             dl.childNodes[1].style.display = 'none';
             dl.childNodes[2].style.display = 'none';
         }
-
 
         var div = document.createElement('div');
         div.id = 'infoContent';
