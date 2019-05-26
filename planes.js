@@ -35,7 +35,7 @@ L.Control.Link = L.Control.extend({
         var editors = document.createElement('span');
         editors.id = 'editors';
         editors.style.display = 'none';
-        editors.innerHTML += '<a target="_blank" href="https://wiki.openstreetmap.org/wiki/Key:parking:lane">Tagging</a>';
+        editors.innerHTML += '<a target="_blank" href="https://wiki.openstreetmap.org/wiki/Key:surface">Tagging</a>';
         editors.innerHTML += ' | <a id="id-bbox" target="_blank">iD</a>, ';
         editors.innerHTML += '<a id="josm-bbox" target="_blank">Josm</a>, ';
         div.appendChild(editors);
@@ -205,8 +205,8 @@ var newWayId = -1;
 
 var change = {
     osmChange: {
-        $version: '0.6',
-        $generator: 'Parking lane ' + version,
+        $version: '0.1',
+        $generator: 'RoadSurfacesEditor ' + version,
         modify: { way: [] },
         create: { way: [] }
     }
@@ -224,7 +224,8 @@ var saving = false;
 
 var viewMinZoom = 15;
 
-var highwayRegex = new RegExp('^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street');
+// TODO, diese Regex wird unten noch 2x dupliziert, IMO sollten wir sie zentralisieren.
+var highwayRegex = new RegExp('^cycleway|motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street');
 
 // ------------- functions -------------------
 
@@ -326,10 +327,11 @@ function mapMoveEnd() {
 function downloadHere() {
     lastBounds = map.getBounds();
     downloading(true);
+    // TODO: Warum braucht der Test-Server ein andere Query?
     if (useTestServer)
-        getContent(urlOsmTest + getQueryParkingLanes(), parseContent);
+        getContent(urlOsmTest + getQuerySurfacesLanes(), parseContent);
     else
-        getContent(urlOverpass + encodeURIComponent(getQueryParkingLanes()), parseContent);
+        getContent(urlOverpass + encodeURIComponent(getQuerySurfacesLanes()), parseContent);
 }
 
 function downloading(downloading){
@@ -406,7 +408,7 @@ function wayIsMajor(tags)
 {
     var findResult = tags.find(x => x.$k == 'highway');
     if (findResult) {
-        if (findResult.$v.search(/^motorway|trunk|primary|secondary|tertiary|unclassified|residential/) >= 0)
+        if (findResult.$v.search(/^cycleway|motorway|trunk|primary|secondary|tertiary|unclassified|residential/) >= 0)
             return true;
         else
             return false;
@@ -563,7 +565,7 @@ function getColorByDate(conditions) {
     return getColor(conditions.default);
 }
 
-function getQueryParkingLanes() {
+function getQuerySurfacesLanes() {
     var bounds = map.getBounds();
     if (useTestServer) {
         var bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].join(',');
@@ -571,15 +573,15 @@ function getQueryParkingLanes() {
     } else {
         var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
         return editorMode
-            ? '[out:xml];(way[highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street"][service!=parking_aisle](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
-            : '[out:xml];(way[highway][~"^parking:.*"~"."](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;';
+            ? '[out:xml];(way[highway~"^cycleway|motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street"](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;'
+            : '[out:xml];(way[highway][~"^surface.*"~"."](' + bbox + ');)->.a;(.a;.a >;.a <;);out meta;';
     }
 }
 
 function getQueryHighways() {
     var bounds = map.getBounds();
     var bbox = [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()].join(',');
-    var tag = 'highway~"^motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street"';
+    var tag = 'highway~"^cycleway|motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|living_street"';
     return '[out:xml];(way[' + tag + '](' + bbox + ');>;way[' + tag + '](' + bbox + ');<;);out meta;';
 }
 
@@ -588,13 +590,9 @@ function getQueryOsmId(id) {
 }
 
 var tagsBlock = [
-    "parking:lane:{side}",
-    "parking:lane:{side}:{type}",
-    "parking:condition:{side}",
-    "parking:condition:{side}:time_interval",
-    "parking:condition:{side}:default",
-    "parking:condition:{side}:maxstay",
-    "parking:condition:{side}:capacity"
+    "surface",
+    "cycleway:{side}:surface",
+    "sidewalk:{side}:surface"
 ];
 
 function getLaneInfoPanelContent(osm) {
@@ -707,7 +705,8 @@ function getLaneInfoPanelContent(osm) {
     }
     else {
         var getTagsBlockForViewer = function (tags, side) {
-            var regex = new RegExp('^parking:.*(?:'+side+'|both)');
+            // TODO prüfen. "both" gibt es IMO nicht, sondern "nicht".
+            var regex = new RegExp('^.*(?:'+side+'|both):surface');
 
             var tagsBlock = document.createElement('div');
             tagsBlock.id = side;

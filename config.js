@@ -135,6 +135,7 @@ var legend = [
   },
 ];
 
+// TODO LATER: In URL Parameter umwandeln; analog zu iD mit Button im Footer.
 var useTestServer = false;
 
 var urlOverpass = 'https://overpass-api.de/api/interpreter?data=';
@@ -145,7 +146,7 @@ var urlOsmTest = useTestServer
     ? 'https://master.apis.dev.openstreetmap.org'
     : 'https://www.openstreetmap.org';
 
-// TODO
+// TODO: Woher kommen diese Keys?
 var auth = useTestServer
     ? osmAuth({
         url: urlOsmTest,
